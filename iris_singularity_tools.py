@@ -299,7 +299,7 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
     else:
         allocated_node, jobname = alloc_convert_node()
         L.info(f"Converting {tag} to SIF file at {sif_path}")
-        exec(["ssh", "-o", '"StrictHostKeyChecking no"',, allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=True)
+        exec(["ssh", "-o", '"StrictHostKeyChecking no"', allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=True)
     L.info(f"Releasing allocated resources")
     exec(["scancel", f"--name={jobname}"], check=False, exec_on_iris=True, echo_command=False)
     L.info(f"All done!")
