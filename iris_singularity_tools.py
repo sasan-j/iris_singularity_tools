@@ -295,11 +295,11 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
         exec(["rm", tar_image_path], exec_on_iris=False, echo_command=False)
         exec(["rm", remote_tar_image_path], exec_on_iris=True, echo_command=False)
         L.info(f"Converting {tar_image_path} to SIF file at {sif_path}")
-        exec(["ssh", "-J", "iris-cluster", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker-archive://{remote_tar_image_path}"'], exec_on_iris=False)
+        exec(["ssh", "-o", '"StrictHostKeyChecking no"', allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker-archive://{remote_tar_image_path}"'], exec_on_iris=True)
     else:
         allocated_node, jobname = alloc_convert_node()
         L.info(f"Converting {tag} to SIF file at {sif_path}")
-        exec(["ssh", "-J", "iris-cluster", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=False)
+        exec(["ssh", "-o", '"StrictHostKeyChecking no"',, allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=True)
     L.info(f"Releasing allocated resources")
     exec(["scancel", f"--name={jobname}"], check=False, exec_on_iris=True, echo_command=False)
     L.info(f"All done!")
