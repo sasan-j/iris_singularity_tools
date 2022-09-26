@@ -221,9 +221,9 @@ def setup_for_vscode_attach(salloc: SallocArgs, singularity: SingularityArgs):
         die("Error: the vscode attach script should be run on your local machine, not on the iris cluster")
     # Check that singularity image exists on iris, otherwise attach will fail later on
     try:
-        exec(["ls", singularity.singularity_image], exec_on_iris=True, check=True, echo_command=False)
+        exec(["ls", singularity.singularity_image], exec_on_iris=True, check=True, echo_command=True)
     except:
-        die(f"Error: File {singularity.singularity_image} not found on iris cluster")
+        die(f"Error: File {singularity.singularity_image} not found on iris cluster. If the path looks right, check that you can connect to iris by running `ssh iris-cluster`.")
 
     # Check that SSH is probably configured on local machine
     ssh_config = sshconf.read_ssh_config(Path.home() / ".ssh" / "config")
