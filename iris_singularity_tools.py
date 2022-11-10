@@ -287,8 +287,8 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
             L.info(f"{tar_image_path} already exists, reusing it. If you wish to export the image again, delete this file.")
         else:
             exec(["docker", "save", "-o", str(tar_image_path), tag], exec_on_iris=False)
-        L.info(f"Uploading {tar_image_path} to HPC path {remote_tar_image_path}")
         remote_tar_image_path = sif_path.parent / tar_image_path.name
+        L.info(f"Uploading {tar_image_path} to HPC path {remote_tar_image_path}")
         exec(["scp", str(tar_image_path), f"iris-cluster:{remote_tar_image_path}"], exec_on_iris=False, echo_command=False)
         allocated_node, jobname = alloc_convert_node()
         L.info(f"Converting {tar_image_path} to SIF file at {sif_path}")
