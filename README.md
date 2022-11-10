@@ -46,13 +46,13 @@ Building Docker containers usually involves root access, it cannot be done direc
 Our script covers all these steps for you, you only need to build your Docker image locally and transfer it over to HPC using the `docker-convert` subcommand.
 
 ```bash
-./iris_singularity_tools docker-convert --tag <tag> --sif-path /path/on/iris/for/image.sif
+./iris_singularity_tools.py docker-convert --tag <tag> --sif-path /path/on/iris/for/image.sif
 ```
 
 You can also use the same subcommand to convert an existing image from an online registry like DockerHub.
 
 ```bash
-./iris_singularity_tools docker-convert --source=registry --tag <tag> --sif-path /path/on/iris/for/image.sif
+./iris_singularity_tools.py docker-convert --source=registry --tag <tag> --sif-path /path/on/iris/for/image.sif
 ```
 
 ## Attaching VSCode to develop on HPC
@@ -78,7 +78,7 @@ Attaching VSCode to a remote Singularity container is not supported by default, 
 The subcommand `--help` will show all available customization options, but here is a short example:
 
 ```
-./iris_singularity_tools.py attach-vscode --job_name awesome-project --time 01:00:00 --cpu_cores 7 --gpus 1 --mem 72G --gpus 0 --singularity_image /path/to/image.sif
+./iris_singularity_tools.py attach-vscode --job_name awesome-project --time 01:00:00 --cpus 7 --gpus 1 --mem 32G --singularity_image /path/to/image.sif
 ```
 
 This command will automatically update your SSH config to include a host corresponding to the given job name, in our example the host `awesome-project-vscode` will be created. This can be used to easily attach VSCode for as long as the node remains allocated.

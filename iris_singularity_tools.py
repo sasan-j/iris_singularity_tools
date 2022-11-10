@@ -287,19 +287,19 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
             L.info(f"{tar_image_path} already exists, reusing it. If you wish to export the image again, delete this file.")
         else:
             exec(["docker", "save", "-o", str(tar_image_path), tag], exec_on_iris=False)
-        L.info(f"Uploading {tar_image_path} to HPC path {sif_path}")
+        L.info(f"Uploading {tar_image_path} to HPC path {remote_tar_image_path}")
         remote_tar_image_path = sif_path.parent / tar_image_path.name
         exec(["scp", str(tar_image_path), f"iris-cluster:{remote_tar_image_path}"], exec_on_iris=False, echo_command=False)
         allocated_node, jobname = alloc_convert_node()
+        L.info(f"Converting {tar_image_path} to SIF file at {sif_path}")
+        exec(["ssh", "-J", "iris-cluster", "-o", "StrictHostKeyChecking=no", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker-archive://{remote_tar_image_path}"'], exec_on_iris=False)
         L.info(f"Removing tmp files {tar_image_path} and iris-cluster:{tar_image_path}")
         exec(["rm", tar_image_path], exec_on_iris=False, echo_command=False)
         exec(["rm", remote_tar_image_path], exec_on_iris=True, echo_command=False)
-        L.info(f"Converting {tar_image_path} to SIF file at {sif_path}")
-        exec(["ssh", "-J", "iris-cluster", "-o", '"StrictHostKeyChecking no"', allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker-archive://{remote_tar_image_path}"'], exec_on_iris=False)
     else:
         allocated_node, jobname = alloc_convert_node()
         L.info(f"Converting {tag} to SIF file at {sif_path}")
-        exec(["ssh", "-J", "iris-cluster", "-o", '"StrictHostKeyChecking no"', allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=False)
+        exec(["ssh", "-J", "iris-cluster", "-o", "StrictHostKeyChecking=no", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=False)
     L.info(f"Releasing allocated resources")
     exec(["scancel", f"--name={jobname}"], check=False, exec_on_iris=True, echo_command=False)
     L.info(f"All done!")
@@ -336,7 +336,7 @@ if __name__ == "__main__":
     run_subparser.add_argument(
         "--batch",
         action="store_true",
-        help="If specified, the job is run using `sbatch`, which will queue it and run it once resources are availanble. By default, jobs are run using `srun`, which blocks until resources are available.",
+        help="If specified, the job is run using `sbatch`, which will queue it and run it once resources are available. By default, jobs are run using `srun`, which blocks until resources are available.",
     )
     run_subparser.add_argument(
         "command",
