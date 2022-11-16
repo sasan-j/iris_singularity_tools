@@ -78,7 +78,7 @@ Attaching VSCode to a remote Singularity container is not supported by default, 
 The subcommand `--help` will show all available customization options, but here is a short example:
 
 ```
-./iris_singularity_tools.py attach-vscode --job_name awesome-project --time 01:00:00 --cpus 7 --gpus 1 --mem 32G --singularity_image /path/to/image.sif
+./iris_singularity_tools.py attach-vscode --job-name awesome-project --time 01:00:00 --cpus 7 --gpus 1 --mem 32G --singularity-image /path/to/image.sif
 ```
 
 This command will automatically update your SSH config to include a host corresponding to the given job name, in our example the host `awesome-project-vscode` will be created. This can be used to easily attach VSCode for as long as the node remains allocated.
@@ -92,7 +92,7 @@ If things are working correctly after attaching to the remote, opening an integr
 The `run` subcommand can be used to quickly start a job in a Singularity image. The full list of options can be displayed using `./iris_singularity_tools.py run --help`. Here is an example:
 
 ```bash
-./iris_singularity_tools.py run --job-name cuda-test --singularity-image /path/to/image.sif --time "00:10:00" --cpus 2 --gpus 1 --mem 8G command_to_run --command_arg1 --command_arg2 arg3
+./iris_singularity_tools.py run --job-name test --singularity-image /path/to/image.sif --time "00:10:00" --cpus 2 --gpus 1 --mem 8G command_to_run --command_arg1 --command_arg2 arg3
 ```
 
 By default, the job is queued instantly using `srun` and the command waits for resources to be available. If you want to queue the job and return immediately using `sbatch`, you can add the `--batch` option.
