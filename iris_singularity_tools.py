@@ -172,13 +172,14 @@ def copy_to_tools_folder(path: Path, name: str):
 
 def get_allocated_node_by_jobname(job_name: str):
     allocated_nodes = exec_output_sync(
-        ["squeue", "--me", "-h", f'--name="{job_name}"', "-o", '"%R"'], exec_on_iris=True
+        ["squeue", "--me", "-h", f'--name="{job_name}"', "-o", '"%i %R"'], exec_on_iris=True
     ).split("\n")
     if len(allocated_nodes) > 1:
         L.warning(
             f"Detected several allocations with name '{job_name}'. You probably want to kill some of them to avoid wasting resources. Use `squeue --me` on iris-cluster to decide which allocations to use `scancel` on"
         )
-    return allocated_nodes[0]
+    [job_id, node_name] = allocated_nodes[0].split(" ")
+    return [job_id, node_name]
 
 
 def copy_vscode_attach_script_to_tools(job_name: str, arguments: List[str]):
@@ -244,17 +245,17 @@ def setup_for_vscode_attach(salloc: SallocArgs, singularity: SingularityArgs):
     exec(["salloc", "--no-shell"] + alloc_args, exec_on_iris=True)
 
     # Find allocated nodeget_allocated_node_by_jobname
-    allocated_node = get_allocated_node_by_jobname(salloc.job_name)
+    [job_id, allocated_node] = get_allocated_node_by_jobname(salloc.job_name)
     L.info(f"Successful allocation on {allocated_node}")
 
     # Update local SSH settings for easy vscode attach
     ssh_host = f"{salloc.job_name}-vscode"
     iris_username = exec_output_sync(["whoami"], exec_on_iris=True)
-    remote_command = f'bash {vscode_attach_script_path}'
+    remote_command = f'srun --jobid {job_id} --overlap bash -i {vscode_attach_script_path}'
     L.info(f"Updating your SSH settings to allow VSCode to attach to target `{ssh_host}`")
     values = {
-        "HostName": allocated_node,
-        "ProxyJump": "iris-cluster",
+        "Hostname": "access-iris.uni.lu",
+        "Port": 8022,
         "User": iris_username,
         "IdentityFile": ssh_identity_file,
         "RemoteCommand": remote_command,
