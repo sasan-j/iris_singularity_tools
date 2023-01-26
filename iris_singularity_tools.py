@@ -254,8 +254,8 @@ def setup_for_vscode_attach(salloc: SallocArgs, singularity: SingularityArgs):
     remote_command = f'srun --jobid {job_id} --overlap bash -i {vscode_attach_script_path}'
     L.info(f"Updating your SSH settings to allow VSCode to attach to target `{ssh_host}`")
     values = {
-        "Hostname": "access-iris.uni.lu",
-        "Port": 8022,
+        "Hostname": allocated_node,
+        "ProxyJump": "iris-cluster",
         "User": iris_username,
         "IdentityFile": ssh_identity_file,
         "RemoteCommand": remote_command,
