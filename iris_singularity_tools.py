@@ -278,7 +278,7 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
         L.info(f"Allocating node to convert image to SIF file")
         job_name = f"docker-conversion-{tag_nospace}"
         exec(["salloc", "--no-shell", "-J", job_name, "-p", "interactive", "--qos", "debug", "--mem", "12G", "-c", "4", "-t", "01:00:00"], exec_on_iris=True)
-        return get_allocated_node_by_jobname(job_name), job_name
+        return get_allocated_node_by_jobname(job_name)
     assert source in ["local", "registry"], f"Invalid source '{source}'"
     if source == "local":
         # If local: export local image to tar file, upload to HPC, and convert to singularity
@@ -291,18 +291,18 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
         remote_tar_image_path = sif_path.parent / tar_image_path.name
         L.info(f"Uploading {tar_image_path} to HPC path {remote_tar_image_path}")
         exec(["scp", str(tar_image_path), f"iris-cluster:{remote_tar_image_path}"], exec_on_iris=False, echo_command=False)
-        allocated_node, jobname = alloc_convert_node()
+        job_id, allocated_node = alloc_convert_node()
         L.info(f"Converting {tar_image_path} to SIF file at {sif_path}")
         exec(["ssh", "-J", "iris-cluster", "-o", "StrictHostKeyChecking=no", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker-archive://{remote_tar_image_path}"'], exec_on_iris=False)
         L.info(f"Removing tmp files {tar_image_path} and iris-cluster:{tar_image_path}")
         exec(["rm", tar_image_path], exec_on_iris=False, echo_command=False)
         exec(["rm", remote_tar_image_path], exec_on_iris=True, echo_command=False)
     else:
-        allocated_node, jobname = alloc_convert_node()
+        job_id, allocated_node = alloc_convert_node()
         L.info(f"Converting {tag} to SIF file at {sif_path}")
         exec(["ssh", "-J", "iris-cluster", "-o", "StrictHostKeyChecking=no", allocated_node, "bash", "-l", "-c", f'"module load tools/Singularity && singularity build {sif_path} docker://{tag}"'], exec_on_iris=False)
     L.info(f"Releasing allocated resources")
-    exec(["scancel", f"--name={jobname}"], check=False, exec_on_iris=True, echo_command=False)
+    exec(["scancel", f"--name={job_id}"], check=False, exec_on_iris=True, echo_command=False)
     L.info(f"All done!")
 
 
