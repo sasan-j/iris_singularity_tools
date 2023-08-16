@@ -282,12 +282,16 @@ def convert_docker_to_sif(tag: str, source: str, sif_path: Path):
     assert source in ["local", "registry"], f"Invalid source '{source}'"
     if source == "local":
         # If local: export local image to tar file, upload to HPC, and convert to singularity
-        tar_image_path: Path = Path("/tmp") / f"{tag_nospace}.tar"
-        L.info(f"Exporting {tag} to {tar_image_path} on your local machine")
-        if tar_image_path.exists():
-            L.info(f"{tar_image_path} already exists, reusing it. If you wish to export the image again, delete this file.")
+        # But if the tag is not a tag but actually a path to a tar file, just use that
+        if tag.endswith("tar") and Path(tag).exists():
+            tar_image_path = Path(tag)
         else:
-            exec(["docker", "save", "-o", str(tar_image_path), tag], exec_on_iris=False)
+            tar_image_path: Path = Path("/tmp") / f"{tag_nospace}.tar"
+            L.info(f"Exporting {tag} to {tar_image_path} on your local machine")
+            if tar_image_path.exists():
+                L.info(f"{tar_image_path} already exists, reusing it. If you wish to export the image again, delete this file.")
+            else:
+                exec(["docker", "save", "-o", str(tar_image_path), tag], exec_on_iris=False)
         remote_tar_image_path = sif_path.parent / tar_image_path.name
         L.info(f"Uploading {tar_image_path} to HPC path {remote_tar_image_path}")
         exec(["scp", str(tar_image_path), f"iris-cluster:{remote_tar_image_path}"], exec_on_iris=False, echo_command=False)
